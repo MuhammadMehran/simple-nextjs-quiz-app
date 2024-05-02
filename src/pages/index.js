@@ -22,6 +22,7 @@ export default function Home() {
   const [allQuestions, setAllQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const max = allQuestions.length;
   const handlePrevious = () => {
     const prevQues = currentQuestion - 1;
     prevQues >= 0 && setCurrentQuestion(prevQues);
@@ -30,8 +31,8 @@ export default function Home() {
 
   const handleNext = () => {
     const nextQues = currentQuestion + 1;
-    nextQues < QUESTIONS.length && setCurrentQuestion(nextQues);
-    setActiveStep(nextQues < QUESTIONS.length && nextQues);
+    nextQues < max && setCurrentQuestion(nextQues);
+    setActiveStep(nextQues < max && nextQues);
   };
 
   const handleAnswerOption = (answer) => {
@@ -43,13 +44,10 @@ export default function Home() {
 
   const handleSubmitButton = () => {
     let newScore = 0;
-    for (let i = 0; i < QUESTIONS.length; i++) {
-      QUESTIONS[i].answerOptions.map(
-        (answer) =>
-          answer.isCorrect &&
-          answer.answer === selectedOptions[i]?.answerByUser &&
-          (newScore += 1)
-      );
+    for (let i = 0; i < max; i++) {
+      if (allQuestions[i].correctAnswer === selectedOptions[i]?.answerByUser) {
+        newScore += 1;
+      }
     }
     setScore(newScore);
     setShowScore(true);
@@ -68,8 +66,7 @@ export default function Home() {
           "https://the-trivia-api.com/v2/questions"
         );
         sleep(10000);
-        console.log(result);
-        setAllQuestions(result);
+        setAllQuestions(result.data);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -79,8 +76,7 @@ export default function Home() {
     fetchDataAsync();
   }, []);
 
-  const max = QUESTIONS.length - 1;
-  const progressPercent = (activeStep / max) * 100;
+  const progressPercent = (activeStep / (max - 1)) * 100;
 
   return (
     <>
@@ -91,7 +87,7 @@ export default function Home() {
 
         {showScore ? (
           <h1 className="text-3xl font-semibold text-center text-white">
-            You scored {score} out of {QUESTIONS.length}
+            You scored {score} out of {allQuestions.length}
           </h1>
         ) : (
           <>
@@ -110,12 +106,15 @@ export default function Home() {
             ) : (
               <>
                 <Question
-                  q={QUESTIONS[currentQuestion].question}
+                  q={allQuestions[currentQuestion].question.text}
                   currentQuestion={currentQuestion + 1}
-                  totalQuestions={QUESTIONS.length}
+                  totalQuestions={max}
                 />
                 <Options
-                  answerOptions={QUESTIONS[currentQuestion].answerOptions}
+                  answerOptions={[
+                    ...allQuestions[currentQuestion].incorrectAnswers,
+                    allQuestions[currentQuestion].correctAnswer,
+                  ]}
                   handleAnswerOption={handleAnswerOption}
                   selectedOptions={selectedOptions}
                   currentQuestion={currentQuestion}
@@ -130,14 +129,12 @@ export default function Home() {
                   <button
                     className="w-[49%] py-3 bg-teal-600 rounded-lg"
                     onClick={
-                      currentQuestion + 1 === QUESTIONS.length
+                      currentQuestion + 1 === max
                         ? handleSubmitButton
                         : handleNext
                     }
                   >
-                    {currentQuestion + 1 === QUESTIONS.length
-                      ? "Submit"
-                      : "Next"}
+                    {currentQuestion + 1 === max ? "Submit" : "Next"}
                   </button>
                 </div>
               </>
