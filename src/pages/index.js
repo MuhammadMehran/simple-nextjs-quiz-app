@@ -30,6 +30,21 @@ export default function Home() {
     ]);
     setSelectedOptions([...selectedOptions]);
   };
+
+  const handleSubmitButton = () => {
+    let newScore = 0;
+    for (let i = 0; i < QUESTIONS.length; i++) {
+      QUESTIONS[i].answerOptions.map(
+        (answer) =>
+          answer.isCorrect &&
+          answer.answer === selectedOptions[i]?.answerByUser &&
+          (newScore += 1)
+      );
+    }
+    setScore(newScore);
+    setShowScore(true);
+  };
+
   return (
     <div className="flex flex-col  w-screen px-5 h-screen bg-[#1A1A1A] justify-center items-center">
       <Head>
@@ -57,9 +72,13 @@ export default function Home() {
         </button>
         <button
           className="w-[49%] py-3 bg-indigo-600 rounded-lg"
-          onClick={handleNext}
+          onClick={
+            currentQuestion + 1 === QUESTIONS.length
+              ? handleSubmitButton
+              : handleNext
+          }
         >
-          Next
+          {currentQuestion + 1 === QUESTIONS.length ? "Submit" : "Next"}
         </button>
       </div>
     </div>
