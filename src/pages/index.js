@@ -4,21 +4,10 @@ import Head from "next/head";
 import Question from "../../components/question";
 import Options from "../../components/options";
 import { QUESTIONS } from "../../lib/questions";
-import { useState } from "react";
-import {
-  Step,
-  StepDescription,
-  StepIcon,
-  StepIndicator,
-  StepNumber,
-  StepSeparator,
-  StepStatus,
-  StepTitle,
-  Stepper,
-  useSteps,
-} from "@chakra-ui/react";
-import { Box, Progress } from "@chakra-ui/react";
-
+import { useState, useEffect } from "react";
+import { useSteps } from "@chakra-ui/react";
+import { Box, Progress, Skeleton, Stack } from "@chakra-ui/react";
+import axios from "axios";
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
@@ -30,6 +19,8 @@ export default function Home() {
     index: 0,
     count: QUESTIONS.length,
   });
+  const [allQuestions, setAllQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const handlePrevious = () => {
     const prevQues = currentQuestion - 1;
@@ -64,6 +55,30 @@ export default function Home() {
     setShowScore(true);
   };
 
+  function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  useEffect(() => {
+    const fetchDataAsync = async () => {
+      setLoading(true);
+
+      try {
+        const result = await axios.get(
+          "https://the-trivia-api.com/v2/questions"
+        );
+        sleep(10000);
+        console.log(result);
+        setAllQuestions(result);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+      setLoading(false);
+    };
+
+    fetchDataAsync();
+  }, []);
+
   const max = QUESTIONS.length - 1;
   const progressPercent = (activeStep / max) * 100;
 
@@ -83,35 +98,50 @@ export default function Home() {
             <Box position="fixed" top="0" left="0" right="0" zIndex="999">
               <Progress value={progressPercent} size="xs" colorScheme="teal" />
             </Box>
-            <Question
-              q={QUESTIONS[currentQuestion].question}
-              currentQuestion={currentQuestion + 1}
-              totalQuestions={QUESTIONS.length}
-            />
-            <Options
-              answerOptions={QUESTIONS[currentQuestion].answerOptions}
-              handleAnswerOption={handleAnswerOption}
-              selectedOptions={selectedOptions}
-              currentQuestion={currentQuestion}
-            />
-            <div className="flex justify-between w-full mt-4 text-white">
-              <button
-                className="w-[49%] py-3 bg-teal-600 rounded-lg"
-                onClick={handlePrevious}
-              >
-                Previous
-              </button>
-              <button
-                className="w-[49%] py-3 bg-teal-600 rounded-lg"
-                onClick={
-                  currentQuestion + 1 === QUESTIONS.length
-                    ? handleSubmitButton
-                    : handleNext
-                }
-              >
-                {currentQuestion + 1 === QUESTIONS.length ? "Submit" : "Next"}
-              </button>
-            </div>
+            {loading ? (
+              <div className="flex flex-col items-start w-full">
+                <Skeleton width="20%" height="20px" my="2" />
+                <Skeleton width="50%" height="20px" my="2" />
+                <Skeleton width="100%" height="40px" my="5" />
+                <Skeleton width="100%" height="40px" my="5" />
+                <Skeleton width="100%" height="40px" my="5" />
+                <Skeleton width="100%" height="40px" my="5" />
+              </div>
+            ) : (
+              <>
+                <Question
+                  q={QUESTIONS[currentQuestion].question}
+                  currentQuestion={currentQuestion + 1}
+                  totalQuestions={QUESTIONS.length}
+                />
+                <Options
+                  answerOptions={QUESTIONS[currentQuestion].answerOptions}
+                  handleAnswerOption={handleAnswerOption}
+                  selectedOptions={selectedOptions}
+                  currentQuestion={currentQuestion}
+                />
+                <div className="flex justify-between w-full mt-4 text-white">
+                  <button
+                    className="w-[49%] py-3 bg-teal-600 rounded-lg"
+                    onClick={handlePrevious}
+                  >
+                    Previous
+                  </button>
+                  <button
+                    className="w-[49%] py-3 bg-teal-600 rounded-lg"
+                    onClick={
+                      currentQuestion + 1 === QUESTIONS.length
+                        ? handleSubmitButton
+                        : handleNext
+                    }
+                  >
+                    {currentQuestion + 1 === QUESTIONS.length
+                      ? "Submit"
+                      : "Next"}
+                  </button>
+                </div>
+              </>
+            )}
           </>
         )}
       </div>
