@@ -51,36 +51,43 @@ export default function Home() {
         <title>Quiz App</title>
       </Head>
 
-      <Question
-        q={QUESTIONS[currentQuestion].question}
-        currentQuestion={currentQuestion + 1}
-        totalQuestions={QUESTIONS.length}
-      />
-      <Options
-        answerOptions={QUESTIONS[currentQuestion].answerOptions}
-        handleAnswerOption={handleAnswerOption}
-        selectedOptions={selectedOptions}
-        currentQuestion={currentQuestion}
-      />
-
-      <div className="flex justify-between w-full mt-4 text-white">
-        <button
-          className="w-[49%] py-3 bg-indigo-600 rounded-lg"
-          onClick={handlePrevious}
-        >
-          Previous
-        </button>
-        <button
-          className="w-[49%] py-3 bg-indigo-600 rounded-lg"
-          onClick={
-            currentQuestion + 1 === QUESTIONS.length
-              ? handleSubmitButton
-              : handleNext
-          }
-        >
-          {currentQuestion + 1 === QUESTIONS.length ? "Submit" : "Next"}
-        </button>
-      </div>
+      {showScore ? (
+        <h1 className="text-3xl font-semibold text-center text-white">
+          You scored {score} out of {QUESTIONS.length}
+        </h1>
+      ) : (
+        <>
+          <Question
+            q={QUESTIONS[currentQuestion].question}
+            currentQuestion={currentQuestion + 1}
+            totalQuestions={QUESTIONS.length}
+          />
+          <Options
+            answerOptions={QUESTIONS[currentQuestion].answerOptions}
+            handleAnswerOption={handleAnswerOption}
+            selectedOptions={selectedOptions}
+            currentQuestion={currentQuestion}
+          />
+          <div className="flex justify-between w-full mt-4 text-white">
+            <button
+              className="w-[49%] py-3 bg-indigo-600 rounded-lg"
+              onClick={handlePrevious}
+            >
+              Previous
+            </button>
+            <button
+              className="w-[49%] py-3 bg-indigo-600 rounded-lg"
+              onClick={
+                currentQuestion + 1 === QUESTIONS.length
+                  ? handleSubmitButton
+                  : handleNext
+              }
+            >
+              {currentQuestion + 1 === QUESTIONS.length ? "Submit" : "Next"}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
